@@ -58,6 +58,20 @@ export default function Index() {
   const [submittedText,setText]=useState('')
   const [LoaderData,setLoader]=useState(true)
 
+  let Rendered_columsn;
+  //Basically more colums on the web as it has more space 
+  if (Platform.OS == "web")
+    {
+      Rendered_columsn=4;
+
+
+    }
+    else
+      {
+        Rendered_columsn=2;
+      }
+
+
 
   const ONE_SECOND_IN_MS = 10;
   const V=()=>
@@ -156,7 +170,8 @@ catch (error)
 <FlatList
 data={pokemonData}
 keyExtractor={item=>item.name}
-numColumns={2}
+
+numColumns={Rendered_columsn}
 
 contentContainerStyle={{
   padding:10,

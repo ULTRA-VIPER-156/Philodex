@@ -162,7 +162,7 @@ let content
             style={{
                 marginTop:8,
 
-                width:'20%',
+                width:30,
                 height:8,
                 borderRadius:22,
                 backgroundColor:'#11111160',
