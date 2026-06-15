@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.philoDex",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,8 +27,9 @@
       "package": "com.anonymous.philoDex"
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/icon.png"
+      "output": "dist",
+      "favicon": "./assets/images/icon.png",
+      "basePath": "/Philodex"
     },
     "plugins": [
       "expo-router",
@@ -44,6 +49,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3eb327cb-92a5-49b6-9907-a0910f703b25"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3eb327cb-92a5-49b6-9907-a0910f703b25"
     }
   }
 }
