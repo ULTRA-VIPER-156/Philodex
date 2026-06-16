@@ -31,6 +31,13 @@ althought not complete has a weird setting page
 
   working on proproper color foratting and setting themes throught the app 
   (currently very unstable ) 
+  <H1>
+    Mobile views?
+  </H1>
+  <img width="738" height="1600" alt="034967e5-f00a-4967-a5db-2daf5bff5250" src="https://github.com/user-attachments/assets/cade28d1-0a42-4399-917e-62e896f514e6" />
+<img width="738" height="1600" alt="a881beb1-8993-4f00-98cd-1a6df97368e8" src="https://github.com/user-attachments/assets/a2d7b3ff-3e9b-4c81-b021-9b307b2a492a" />
+<img width="738" height="1600" alt="ec8732a2-badb-4626-85ac-d81827637577" src="https://github.com/user-attachments/assets/24c1382a-b59e-4fe7-b9ef-0695334e53e3" />
+
   
 
 </h2>
