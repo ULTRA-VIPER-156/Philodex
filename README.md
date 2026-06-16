@@ -1,4 +1,4 @@
-<h1>
+<img width="1907" height="922" alt="image" src="https://github.com/user-attachments/assets/ed21386b-9d91-4d6f-85b2-8f8431caf2ec" /><h1>
   Philodedex
 </h1>
 <img width="1919" height="1042" alt="image" src="https://github.com/user-attachments/assets/1e05095e-a32b-44a5-a4bc-d3e8ec4fd94c" />
@@ -15,8 +15,35 @@
 <img width="1919" height="1047" alt="image" src="https://github.com/user-attachments/assets/8449de1d-a9c4-4046-9c94-2fa496d123bf" />
 
 
+
+
 <img width="1918" height="1038" alt="image" src="https://github.com/user-attachments/assets/5726db64-5eb0-4390-90bf-9ef121f47cf3" />
 
 althought not complete has a weird setting page 
 
+<H1>
+  Updates .......
+</H1>
+<h2>
+  Dark Mode ?....<img width="1907" height="908" alt="image" src="https://github.com/user-attachments/assets/0e6e76b4-32e0-43c0-acb5-6b24bfb4b1be" />
+  <img width="1907" height="922" alt="image" src="https://github.com/user-attachments/assets/574f2b16-bbb1-4a7d-af57-13dbd8d3f0c5" />
+
+
+  working on proproper color foratting and setting themes throught the app 
+  (currently very unstable ) 
+  
+
+</h2>
+<H2>
+  Planned Future updates ...
+</H2>
+<h3>
+  -Randomizer 
+  -comparator 
+  -proper profile page 
+</h3>
+
+
+-----------------Try out my unstable verstion --------------
+https://philodex--yhtosp7t5x.expo.app
 
