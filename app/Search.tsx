@@ -1,6 +1,5 @@
+import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import GlassSurface from './GlassSurface';
-import React from "react"
 
 export default function Profile() {
   return (
@@ -33,10 +32,6 @@ export default function Profile() {
           </Text>
         </View>
       </ScrollView>
-
-      <View style={styles.floatingGlassContainer}>
-        <GlassSurface />
-      </View>
     </SafeAreaView>
   );
 }

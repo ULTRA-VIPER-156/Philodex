@@ -1,8 +1,10 @@
+import { Audio } from 'expo-av';
 import { Link } from "expo-router";
 import LottieView from "lottie-react-native";
 import React, { useEffect, useState } from "react";
 import { FlatList, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, Vibration, View, useWindowDimensions } from "react-native";
-import GlassSurface from "./GlassSurface";
+import { getPokemonTypeColor, getThemeColors } from './Artifacts/Colors';
+import { useTheme } from "./ThemeContext";
 
 
 interface Pokemon 
@@ -24,29 +26,8 @@ interface PokemonType
   }
 }
 
-const firstIncrement = 60;
-const INCREMENT = 20;
-
-const Color_By_Type = {
-  normal: "#D3D3C8",
-  fire: "#FFB6A5",
-  water: "#A6D8FF",
-  grass: "#B5E7B5",
-  electric: "#FFFACD",
-  ice: "#D4F1F9",
-  fighting: "#FFCCCC",
-  poison: "#E6CCFF",
-  ground: "#F0E6D2",
-  flying: "#E0E0FF",
-  psychic: "#FFD6E0",
-  bug: "#D9F2D9",
-  rock: "#E8DFD0",
-  ghost: "#D8CCEB",
-  dark: "#C0C0C0",
-  dragon: "#D8CCEB",
-  steel: "#E8E8F0",
-  fairy: "#FFE6EE"
-};
+const firstIncrement = 220;
+const INCREMENT = 300;
 
 const Types=[
   "normal",
@@ -70,15 +51,17 @@ const Types=[
 ]
 
 export default function Index() {
-
+  const { isDark } = useTheme();
   const [pokemonData, setPokemonData] = useState<Pokemon[]>([]);
-  const [submittedText,setText]=useState('')
-  const [LoaderData,setLoader]=useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [submittedText, setText] = useState('')
+  const [LoaderData, setLoader] = useState(true)
   const [offset, setOffset] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePokemon, setHasMorePokemon] = useState(true);
+  const [keystrokeSound, setKeystrokeSound] = useState<Audio.Sound | null>(null);
+  const [backspaceSound, setBackspaceSound] = useState<Audio.Sound | null>(null);
 
+  const themeColors = getThemeColors(isDark);
   const { width: screenWidth } = useWindowDimensions();
   const itemMinWidth = 160;
   const containerPadding = 20;
@@ -100,6 +83,9 @@ export default function Index() {
 
     async function filterByType(type:string)
     {
+      if (Platform.OS === 'android') {
+        Vibration.vibrate(8);
+      }
       setLoader(true);
       setOffset(0);
       setHasMorePokemon(true);
@@ -135,9 +121,34 @@ export default function Index() {
   }
   
 
-useEffect (() => {
+useEffect(() => {
+  const loadSound = async () => {
+    try {
+      const { sound: keystroke } = await Audio.Sound.createAsync(
+        require('../assets/Artifacts/Sounds/keystroke.mp3')
+      );
+      setKeystrokeSound(keystroke);
 
+      const { sound: backspace } = await Audio.Sound.createAsync(
+        require('../assets/Artifacts/Sounds/backspace.mp3')
+      );
+      setBackspaceSound(backspace);
+    } catch (error) {
+      console.log('Error loading sounds:', error);
+    }
+  };
+
+  loadSound();
   fetchPokemon();
+
+  return () => {
+    if (keystrokeSound) {
+      keystrokeSound.unloadAsync();
+    }
+    if (backspaceSound) {
+      backspaceSound.unloadAsync();
+    }
+  };
 }, []);
 
 
@@ -161,17 +172,14 @@ useEffect (() => {
       );
 
       if (newOffset === 0) {
-        // Initial load
         setPokemonData(DetailedPokemon);
       } else {
-        // Append more data
         setPokemonData(prev => [...prev, ...DetailedPokemon]);
       }
-
+      //So this kinda means check if there is still more stuff to fetch from the spi
       setOffset(newOffset + INCREMENT);
       setIsLoadingMore(false);
       
-      // Check if there are more pokemon to load
       if (data.next) {
         setHasMorePokemon(true);
       } else {
@@ -205,7 +213,7 @@ useEffect (() => {
             source={require("../assets/Spinner.json")}
             autoPlay
             loop
-            style={{ width: 380, height: 380,marginTop:0 }}
+            style={{ width: 280, height: 280,marginTop:0 }}
           />
         </View>
       )
@@ -232,7 +240,7 @@ useEffect (() => {
 style={{ flex: 1 }}
 data={pokemonData}
 keyExtractor={item=>item.name}
-
+showsVerticalScrollIndicator={false}
 numColumns={Rendered_columsn}
 
 contentContainerStyle={{
@@ -267,15 +275,19 @@ return (
          href={{pathname:"/PokemonDetails",params:{ name : item.name },}}
           
          style={{
-                      // @ts-ignore
-                      backgroundColor:Color_By_Type[item.types[0].type.name]+86,
+                      backgroundColor: getPokemonTypeColor(item.types[0].type.name, isDark, true),
                       borderRadius:24,
                       height: cardHeight,
                       
                       overflow: "hidden",
                       width: itemWidth,
                   }}
-                  onPress={V}
+                  onPress={() => {
+                    V();
+                    if (Platform.OS === 'android') {
+                      Vibration.vibrate(10);
+                    }
+                  }}
          
        
        >
@@ -299,7 +311,18 @@ return (
               
               
             }}>
-           <Text style={styles.name}>{item.name}</Text>
+           <Text 
+           style={{
+              fontSize:18,
+              fontWeight:"bold",
+                overflow: "hidden",
+                color: themeColors.textPrimary,
+              textAlign:"center",
+              marginBottom:4,
+              width: itemWidth * 0.9,
+              maxHeight: 40,
+            }}
+           >{item.name}</Text>
 
            <View
              style={{
@@ -335,7 +358,8 @@ return (
               width:47,
               height:20,
               margin:1.2,
-              backgroundColor: 'rgba(175, 127, 127, 0.15)',
+              backgroundColor: themeColors.badgeBackground,
+              
 
             }}
               >
@@ -344,7 +368,9 @@ return (
                 style={{
                   margin:1.3,
                   textAlign:"center",
-                  fontSize:12
+                  fontSize:12,
+                 color: themeColors.textPrimary,
+
                 }}
                 >
                   {t.type.name}
@@ -385,7 +411,7 @@ return (
     marginTop:0,
     paddingTop:30,
     flex:1,
-    backgroundColor: isDarkMode ? '#000000b8' : '#FFFFFF',
+    backgroundColor: themeColors.background,
    }}
    
    >
@@ -394,21 +420,18 @@ return (
 
     
    <View>
-
     <Text 
     
     style={{
-      fontSize:25,
-      fontWeight:800,
-       marginLeft:10,
-       color: isDarkMode ? '#FFFFFF' : '#000000',
+      fontSize:20,
+      fontWeight:'bold',
+      marginLeft:24,
+      color: themeColors.textPrimary,
 
     }}
     >
-      Hi Welcome To Philodex
-      <TouchableOpacity>
-       
-      </TouchableOpacity>
+      Hi,Welcome Trainer to Philodex
+      
 
     </Text>
    
@@ -416,8 +439,8 @@ return (
     style={{
       fontSize:15,
       fontWeight:800,
-      marginLeft:10,
-      color: isDarkMode ? '#FFFFFF' : '#000000',
+      marginLeft:24,
+      color: themeColors.textSecondary,
 
     }}>
       use the not so advanced search bar to look for a pokemon 
@@ -436,15 +459,31 @@ return (
 
         <TextInput
             style={[styles.input, { 
-              color: isDarkMode ? '#FFFFFF' : '#000000',
-              borderColor: isDarkMode ? '#FFFFFF' : '#000000',
-              backgroundColor: isDarkMode ? '#333333' : '#FFFFFF',
+              color: themeColors.inputText,
+              borderColor: themeColors.inputBorder,
+              backgroundColor: themeColors.inputBackground,
             }]}
             placeholder="Please enter Pokemon name "
-            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+            placeholderTextColor={themeColors.inputPlaceholder}
             maxLength={32} 
             value={submittedText}
-            onChangeText={setText}
+            onChangeText={(text) => {
+              //This is gonna be so annoying lol
+
+              setText(text);
+              if (text.length > submittedText.length) {
+                if (keystrokeSound) {
+                  //Forward keypress 
+                  keystrokeSound.replayAsync();
+                }
+              } else if (text.length < submittedText.length) {
+                if (backspaceSound) {
+                  //Bcckawards duhhhh
+
+                  backspaceSound.replayAsync();
+                }
+              }
+            }}
           >
           </TextInput>
          
@@ -459,22 +498,26 @@ return (
              {submittedText.trim().length > 0 ? (
                <Link
                 href={{pathname:"/PokemonDetails",params:{ name : submittedText .toLowerCase()},}}
-
+                asChild
               >
-                <Text
-                style={{
-                  textAlign:'center',
-                  color:"white",
-                  marginTop:5,
-                  alignContent:"center",
-                  fontSize:15,
-                  fontWeight:800,
-
-                }}
-                >
-                 search
-                </Text>
-                </Link>
+                <TouchableOpacity style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} onPress={() => {
+                  if (Platform.OS === 'android') {
+                    Vibration.vibrate(8);
+                  }
+                }}>
+                  <Text
+                    style={{
+                      textAlign:'center',
+                      color:"white",
+                      alignContent:"center",
+                      fontSize:15,
+                      fontWeight:800,
+                    }}
+                  >
+                    search
+                  </Text>
+                </TouchableOpacity>
+               </Link>
              ) : (
                <Text
                style={{
@@ -506,10 +549,29 @@ return (
    
     borderRadius:20,
    }}>
+     <Text
+     
+   style={{
+      fontSize:18,
+      fontWeight:800,
+      marginBottom:10,
+      marginTop:20,
+      marginLeft:10,
+      color: themeColors.textPrimary,
+
+     }}
+     
+
+     >
+      The Pokemon List 
+
+    </Text>
+   {/**This is basically the type filter section  */}
    <FlatList
    data={Types}
    keyExtractor={item=>item}
    horizontal
+   showsHorizontalScrollIndicator={false}
    
    contentContainerStyle={{
     padding:10,
@@ -524,18 +586,19 @@ return (
       borderRadius:20,
       width:80,
       height:30,
-      //@ts-ignore
-      backgroundColor: Color_By_Type[item]+86,
+      backgroundColor: getPokemonTypeColor(item, isDark, true),
       justifyContent:"center",
       
     }}
-    onPress={filterByType.bind(null,item)}
+    onPress={() => {
+      filterByType(item);
+    }}
     >
       <Text
       style={{
         textAlign:"center",
         fontSize:12,
-        color: isDarkMode ? '#FFFFFF' : '#000000',
+        color: themeColors.textPrimary,
       }}
       >
         {item}
@@ -571,20 +634,6 @@ return (
 <View style={{flex:1}}>
   {content}
 </View>
-
-<View style={styles.floatingGlassContainer}>
-  <GlassSurface/>
-</View>
-
-<View>
-  {/**Basically will place my nav bar somewhere here  */}
-  <View>
-    
-
-  </View>
-</View>
-
-
 
 </View>
 

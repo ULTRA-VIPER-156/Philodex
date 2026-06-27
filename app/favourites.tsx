@@ -4,8 +4,9 @@ import { BlurView } from 'expo-blur';
 import { Link } from 'expo-router';
 import LottieView from "lottie-react-native";
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GlassSurface from './GlassSurface';
+import { FlatList, Image, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Vibration } from 'react-native';
+import { getPokemonTypeColor, getThemeColors } from './Artifacts/Colors';
+import { useTheme } from './ThemeContext';
 
 interface PokemonFav {
   name: string;
@@ -22,34 +23,11 @@ interface PokemonFav {
 }
 
 
-// Mapping Pokemon types to specific background colors for the UI cards
-const Color_By_Type: any = {
-  normal: "#D3D3C8",
-  fire: "#f6bfb2",
-  water: "#A6D8FF",
-  grass: "#B5E7B5",
-  electric: "#FFFACD",
-  ice: "#D4F1F9",
-  fighting: "#FFCCCC",
-  poison: "#E6CCFF",
-  ground: "#F0E6D2",
-  flying: "#E0E0FF",
-  psychic: "#FFD6E0",
-  bug: "#D9F2D9",
-  rock: "#E8DFD0",
-  ghost: "#D8CCEB",
-  dark: "#C0C0C0",
-  dragon: "#D8CCEB",
-  steel: "#E8E8F0",
-  fairy: "#FFE6EE"
-};
-
-// Default list to show if the user hasn't saved any favorites yet
-const DEFAULT_FAVS = ["pikachu", "bulbasaur", "charmander", "squirtle", "eevee"];
-
 export default function Favorites() {
+  const { isDark } = useTheme();
   const [favData, setFavData] = useState<PokemonFav[]>([]);
   const [loading, setLoading] = useState(true);
+  const themeColors = getThemeColors(isDark);
 
   // Fetch data from storage as soon as the component mounts
   useEffect(() => {
@@ -61,10 +39,10 @@ export default function Favorites() {
     // Pull saved names from device storage
     const stored = await AsyncStorage.getItem('pokemon_favs');
     
-    let names = stored ? JSON.parse(stored) : DEFAULT_FAVS;
+    let names = stored ? JSON.parse(stored) : [];
     
     // Fallback to defaults if the list is empty
-    if (names.length === 0) names = DEFAULT_FAVS;
+    if (names.length === 0) names = [];
 
     // Fetch full details 
     const detailed = await Promise.all(
@@ -83,6 +61,9 @@ export default function Favorites() {
 
   // Logic to remove a Pokemon from the state 
   const removeItem = async (name: string) => {
+    if (Platform.OS === 'android') {
+      Vibration.vibrate(10);
+    }
     const updated = favData.filter(p => p.name !== name);
     setFavData(updated);
     const namesOnly = updated.map(p => p.name);
@@ -92,10 +73,10 @@ export default function Favorites() {
   let content = null;
   if (favData.length === 0 && !loading) {
     content = (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background }]}>
         
          <View style={styles.center}>
-            <Text style={{ fontSize: 24, fontWeight: '700', color: '#333', marginBottom: 20 }}>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: themeColors.textPrimary, marginBottom: 20 }}>
                 No Favorites Yet
             </Text>
                 <LottieView
@@ -104,10 +85,10 @@ export default function Favorites() {
                   loop
                   style={styles.lottie}
                 />
-                 <Text style={{ fontSize: 18, color: '#666', textAlign: 'center' }}>
+                 <Text style={{ fontSize: 18, color: themeColors.textSecondary, textAlign: 'center' }}>
                 lol unfortuneately you have no favourites yet, go catch some pokemon brotato
                 </Text>
-                <Text style={{ fontSize: 14, color: '#aaa', marginTop: 10, textAlign: 'center' }}>
+                <Text style={{ fontSize: 14, color: themeColors.textSecondary, marginTop: 10, textAlign: 'center' }}>
                 (hint: give your heart to a pokemon in the details page to add it here)
                 </Text>
               </View>
@@ -115,15 +96,14 @@ export default function Favorites() {
       </View>
     );
   } else {
-    // Main List view
     content = (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View>
-        <Text style={styles.title}>Favourites</Text>
+        <Text style={[styles.title, { color: themeColors.textPrimary }]}>Favourites</Text>
         <Text
           style={{
             fontSize: 24,
-            color: '#666',
+            color: themeColors.textSecondary,
             marginBottom: 20,
             paddingHorizontal: 10,
             textAlign: 'center',
@@ -136,8 +116,7 @@ export default function Favorites() {
           
             
         </Text>
-         {/**Some black bar here or something */}
-            <View
+         <View
             style={{
                 alignItems:'center'
                 
@@ -146,12 +125,11 @@ export default function Favorites() {
                  <View
             style={{
                 marginTop:8,
-
                 width:'20%',
                 height:8,
                 marginBottom:20,
                 borderRadius:22,
-                backgroundColor:'#11111160',
+                backgroundColor: themeColors.textSecondary + '40',
             }}
             >
                 
@@ -168,31 +146,39 @@ export default function Favorites() {
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => {
             const mainType = item.types[0].type.name;
-            const themeColor = Color_By_Type[mainType] || "#eee";
+            const themeColor = getPokemonTypeColor(mainType, isDark);
             
             return (
               <View style={styles.barWrapper}>
                 {/* Left side */}
                 <View style={[styles.coloredHalf, { backgroundColor: themeColor }]}>
                   <Link href={{ pathname: "/PokemonDetails", params: { name: item.name } }} asChild>
-                    <TouchableOpacity style={styles.infoSection}>
+                    <TouchableOpacity style={styles.infoSection} onPress={() => {
+                      if (Platform.OS === 'android') {
+                        Vibration.vibrate(8);
+                      }
+                    }}>
                       <Image 
                         source={{ uri: item.sprites.front_default }} 
                         style={styles.sprite} 
                       />
                       <View style={styles.textData}>
-                        <Text style={styles.cardName}>{item.name}</Text>
-                        <Text style={styles.typeText}>{mainType.toUpperCase()}</Text>
+                        <Text style={[styles.cardName, { color: isDark ? '#fff' : '#333' }]}>{item.name}</Text>
+                        <Text style={[styles.typeText, { color: isDark ? '#b0b0c0' : 'rgba(0,0,0,0.4)' }]}>{mainType.toUpperCase()}</Text>
                       </View>
                     </TouchableOpacity>
                   </Link>
                 </View>
 
                 {/* Right side*/}
-                <View style={styles.actionSection}>
-                  <BlurView intensity={10} tint="light" style={StyleSheet.absoluteFill} />
-                  <TouchableOpacity style={styles.actionBtn} onPress={() => console.log("More options for", item.name)}>
-                     <Ionicons name="options-outline" size={24} color="#444" />
+                <View style={[styles.actionSection, { backgroundColor: isDark ? '#1a1a1c' : '#fff' }]}>
+                  <BlurView intensity={10} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+                  <TouchableOpacity style={styles.actionBtn} onPress={() => {
+                    if (Platform.OS === 'android') {
+                      Vibration.vibrate(8);
+                    }
+                  }}>
+                     <Ionicons name="options-outline" size={24} color={isDark ? "#ccc" : "#444"} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => removeItem(item.name)} style={styles.actionBtn}>
                     <Ionicons name="trash-outline" size={24} color="#b55858" />
@@ -207,23 +193,19 @@ export default function Favorites() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: themeColors.background }]}>
       <View style={{ flex: 1 }}>
         {content}
-      </View>
-      
-      <View style={styles.floatingGlassContainer}>
-        <GlassSurface />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 16 },
+  safeArea: { flex: 1 },
+  container: { flex: 1, paddingHorizontal: 16 },
   title: { fontSize: 36, fontWeight: '900', marginVertical: 20, letterSpacing: -1.5, 
-    alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#333'
+    alignItems: 'center', justifyContent: 'center', textAlign: 'center'
   },
   barWrapper: {
     flexDirection: 'row',
@@ -250,8 +232,8 @@ const styles = StyleSheet.create({
   },
   sprite: { width: 85, height: 85, resizeMode: 'contain' },
   textData: { marginLeft: 5 },
-  cardName: { fontSize: 20, fontWeight: '800', textTransform: 'capitalize', color: '#333' },
-  typeText: { fontSize: 10, fontWeight: '900', color: 'rgba(0,0,0,0.4)', marginTop: 2 },
+  cardName: { fontSize: 20, fontWeight: '800', textTransform: 'capitalize' },
+  typeText: { fontSize: 10, fontWeight: '900', marginTop: 2 },
   actionSection: {
     flex: 0.8,
     flexDirection: 'row',
@@ -272,14 +254,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     zIndex: 999,
   },
-    center: {
-    flex: 1,
+  center: {
     justifyContent: "center",
     alignItems: "center",
     alignContent:'center'
   },
-   lottie: {
-    width: 280,
-    height: 280
+  lottie: {
+    width: 200,
+    height: 200
   },
 });

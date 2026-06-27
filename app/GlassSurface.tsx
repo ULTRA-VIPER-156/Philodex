@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-  ViewStyle
+  ViewStyle,
+  Vibration
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
+import { getThemeColors } from './Artifacts/Colors';
+import { useTheme } from './ThemeContext';
 
 interface GlassSurfaceProps {
   width?: number;
@@ -27,15 +30,30 @@ const GlassTabNavigation: React.FC<GlassSurfaceProps> = ({
   const resolvedWidth = width ?? defaultWidth;
   const router = useRouter();
   const pathname = usePathname();
+  const { isDark } = useTheme();
+
+  const colors = getThemeColors(isDark);
+
+  const activeAccentColor = isDark ? '#5953532e' : '#8a8a8a22';
+
+  const iconColor = (active: boolean) => {
+    if (active) {
+      return colors.textPrimary;
+    }
+    return colors.textSecondary;
+  };
 
   const icons = [
-    { id: 0, path: '/', component: (active: boolean) => <HomeIcon color={active ? "#000" : "#2e2e2f"} /> },
-    { id: 1, path: '/favourites', component: (active: boolean) => <HeartIcon color={active ? "#000" : "#2e2e2f"} /> },
-    { id: 2, path: '/Settings', component: (active: boolean) => <SettingsIcon color={active ? "#000" : "#2e2e2f"} /> },
-    { id: 3, path: '/search', component: (active: boolean) => <UserIcon color={active ? "#000" : "#2e2e2f"} /> },
+    { id: 0, path: '/', component: (active: boolean) => <HomeIcon color={iconColor(active)} /> },
+    { id: 1, path: '/favourites', component: (active: boolean) => <HeartIcon color={iconColor(active)} /> },
+    { id: 2, path: '/Settings', component: (active: boolean) => <SettingsIcon color={iconColor(active)} /> },
+    { id: 3, path: '/search', component: (active: boolean) => <UserIcon color={iconColor(active)} /> },
   ];
 
   const handlePress = (path: string) => {
+    if (Platform.OS === 'android') {
+      Vibration.vibrate(8);
+    }
     router.push(path as any);
   };
 
@@ -43,10 +61,17 @@ const GlassTabNavigation: React.FC<GlassSurfaceProps> = ({
     <View style={[styles.wrapper, { width: resolvedWidth, height }, style]}>
       <BlurView
         intensity={Platform.OS === 'ios' ? 90 : 100}
-        tint="extraLight"
-        style={[StyleSheet.absoluteFill, styles.blurContainer]}
+        tint={isDark ? "dark" : "extraLight"}
+        style={[
+          StyleSheet.absoluteFill, 
+          styles.blurContainer,
+          { 
+            backgroundColor: colors.glassBackground, 
+            borderColor: colors.glassBorder 
+          }
+        ]}
       >
-        <View style={styles.innerGlow} />
+        <View style={[styles.innerGlow, isDark && styles.innerGlowDark]} />
         <View style={styles.iconsContainer}>
           {icons.map((item) => {
             const isActive = pathname === item.path;
@@ -57,10 +82,14 @@ const GlassTabNavigation: React.FC<GlassSurfaceProps> = ({
                 activeOpacity={0.8}
                 style={[
                   styles.iconButton,
-                  isActive && { transform: [{ scale: 1.15 }] }
+                  isActive && { transform: [{ scale: 1.15 }] },
+                  isActive && { backgroundColor: activeAccentColor }
                 ]}
               >
                 {item.component(isActive)}
+                {isActive && (
+                  <View style={[styles.activeDot, { backgroundColor: colors.textPrimary }]} />
+                )}
               </TouchableOpacity>
             );
           })}
@@ -69,6 +98,8 @@ const GlassTabNavigation: React.FC<GlassSurfaceProps> = ({
     </View>
   );
 };
+
+/* --- Icon Components --- */
 
 const HomeIcon = ({ color }: { color: string }) => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -97,6 +128,8 @@ const UserIcon = ({ color }: { color: string }) => (
   </Svg>
 );
 
+/* --- Styles --- */
+
 const styles = StyleSheet.create({
   wrapper: {
     alignSelf: 'center',
@@ -109,9 +142,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   blurContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
   innerGlow: {
     ...StyleSheet.absoluteFillObject,
@@ -119,6 +150,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.8)',
     margin: 1.5,
+  },
+  innerGlowDark: {
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   iconsContainer: {
     flex: 1,
@@ -132,6 +166,14 @@ const styles = StyleSheet.create({
     height: 54,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 27,
+  },
+  activeDot: {
+    position: 'absolute',
+    bottom: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
 });
 

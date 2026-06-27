@@ -3,29 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
-
-// Color constants remain the same
-const Color_By_Type = {
-  normal: "#D3D3C8",
-  fire: "#f6bfb2",
-  water: "#A6D8FF",
-  grass: "#B5E7B5",
-  electric: "#FFFACD",
-  ice: "#D4F1F9",
-  fighting: "#FFCCCC",
-  poison: "#E6CCFF",
-  ground: "#F0E6D2",
-  flying: "#E0E0FF",
-  psychic: "#FFD6E0",
-  bug: "#D9F2D9",
-  rock: "#E8DFD0",
-  ghost: "#D8CCEB",
-  dark: "#1e1222",
-  dragon: "#D8CCEB",
-  steel: "#E8E8F0",
-  fairy: "#FFE6EE"
-};
+import { Image, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, Vibration, View, useWindowDimensions } from "react-native";
+import { useTheme } from './ThemeContext';
 
 const Color_By_Type_C2 = {
   normal: "#a49a4dff",
@@ -48,7 +27,7 @@ const Color_By_Type_C2 = {
   fairy: "#FFB7C5"
 };
 
-// Enhanced Interfaces
+// Interfaces
 interface Pokemon {
   name: string;
   id: number;
@@ -153,14 +132,14 @@ interface PokeSprites {
   };
 }
 
-// Helper function
+// Helper func
 const getResponsiveSize = (width: number, sizes: { phone: number; tablet: number; desktop: number }) => {
   if (width >= 1024) return sizes.desktop;
   if (width >= 768) return sizes.tablet;
   return sizes.phone;
 };
 
-// Move Details Modal Component
+// Move Details 
 const MoveDetailsModal = ({ visible, move, onClose, styles, fontSizes, spacing, colorScheme }: any) => (
   <Modal
     animationType="slide"
@@ -174,7 +153,12 @@ const MoveDetailsModal = ({ visible, move, onClose, styles, fontSizes, spacing, 
           <Text style={[styles.modalTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>
             {move?.name}
           </Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={() => {
+            if (Platform.OS === 'android') {
+              Vibration.vibrate(8);
+            }
+            onClose();
+          }}>
             <Ionicons name="close" size={28} color="#333" />
           </TouchableOpacity>
         </View>
@@ -225,14 +209,35 @@ const getEnglishEffect = (entries: Array<{ effect: string; short_effect: string;
 export default function PokemonDetails() {
   const params = useLocalSearchParams<{ name?: string | string[] }>();
   const name = Array.isArray(params.name) ? params.name[0] : params.name;
+  const { isDark } = useTheme();
   
   const [pokemonDets, setPokemonDets] = useState<Pokemon | null>(null);
   const [evolutionChain, setEvolutionChain] = useState<{ name: string; sprite: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  
-  // New states for abilities and moves
+
+  const Color_By_Type = {
+    normal: isDark ? "#3a3a3a" : "#D3D3C8",
+    fire: isDark ? "#8b3a00" : "#FFB6A5",
+    water: isDark ? "#003d5c" : "#A6D8FF",
+    grass: isDark ? "#2a5a2a" : "#B5E7B5",
+    electric: isDark ? "#5a5a00" : "#FFFACD",
+    ice: isDark ? "#003a5c" : "#D4F1F9",
+    fighting: isDark ? "#5a0000" : "#FFCCCC",
+    poison: isDark ? "#4a0066" : "#E6CCFF",
+    ground: isDark ? "#5a4a2a" : "#F0E6D2",
+    flying: isDark ? "#2a2a5a" : "#E0E0FF",
+    psychic: isDark ? "#5a003a" : "#FFD6E0",
+    bug: isDark ? "#2a5a2a" : "#D9F2D9",
+    rock: isDark ? "#5a4a3a" : "#E8DFD0",
+    ghost: isDark ? "#3a2a5a" : "#D8CCEB",
+    dark: isDark ? "#1a1a1a" : "#C0C0C0",
+    dragon: isDark ? "#3a1a5a" : "#D8CCEB",
+    steel: isDark ? "#3a3a4a" : "#E8E8F0",
+    fairy: isDark ? "#5a2a4a" : "#FFE6EE"
+  };
+
   const [abilitiesDetails, setAbilitiesDetails] = useState<Map<string, AbilityDetails>>(new Map());
   const [movesDetails, setMovesDetails] = useState<Map<string, MoveDetails>>(new Map());
   const [selectedMove, setSelectedMove] = useState<MoveDetails | null>(null);
@@ -246,7 +251,7 @@ export default function PokemonDetails() {
   const isTablet = width >= 768;
   const isDesktop = width >= 1024;
   
-  //font sizes
+
   const fontSizes = {
     title: getResponsiveSize(width, { phone: 28, tablet: 36, desktop: 44 }),
     subtitle: getResponsiveSize(width, { phone: 20, tablet: 24, desktop: 28 }),
@@ -256,14 +261,13 @@ export default function PokemonDetails() {
     number: getResponsiveSize(width, { phone: 48, tablet: 60, desktop: 72 }),
   };
   
-  // Responsive spacing
   const spacing = {
     padding: getResponsiveSize(width, { phone: 12, tablet: 20, desktop: 24 }),
     margin: getResponsiveSize(width, { phone: 8, tablet: 12, desktop: 16 }),
     cardRadius: getResponsiveSize(width, { phone: 12, tablet: 16, desktop: 20 }),
   };
   
-  // Responsive image sizes
+  //Imae sizes 
   const imageSizes = {
     main: getResponsiveSize(width, { 
       phone: width > 600 ? 270 : 220, 
@@ -273,7 +277,7 @@ export default function PokemonDetails() {
     evolution: getResponsiveSize(width, { phone: 60, tablet: 80, desktop: 100 }),
   };
   
-  // New function to fetch ability details
+  //  fetch ability details
   const fetchAbilityDetails = async (abilityUrl: string): Promise<AbilityDetails> => {
     try {
       const response = await fetch(abilityUrl);
@@ -293,7 +297,7 @@ export default function PokemonDetails() {
     }
   };
   
-  // New function to fetch move details
+  // move details
   const fetchMoveDetails = async (moveUrl: string): Promise<MoveDetails> => {
     try {
       const response = await fetch(moveUrl);
@@ -323,7 +327,7 @@ export default function PokemonDetails() {
     }
   };
   
-  // Function to fetch all abilities and moves details
+  //abilities and moves details
   const fetchAbilitiesAndMovesDetails = async (pokemon: Pokemon) => {
     // Fetch abilities details
     const abilitiesMap = new Map<string, AbilityDetails>();
@@ -332,7 +336,7 @@ export default function PokemonDetails() {
       abilitiesMap.set(ability.ability.name, details);
     });
     
-    // Fetch moves details (limit to first 20 moves to avoid overwhelming the API)
+    // Fetch moves details 
     const movesMap = new Map<string, MoveDetails>();
     const movesToFetch = pokemon.moves.slice(0, 20);
     const movePromises = movesToFetch.map(async (move) => {
@@ -382,7 +386,7 @@ export default function PokemonDetails() {
     if (!name) return;
     fetchDetailsFromName(name);
   }, [name]);
-  
+
   useEffect(() => {
     if (!pokemonDets) return;
     fetchEvolutionChain(pokemonDets);
@@ -401,6 +405,9 @@ export default function PokemonDetails() {
   }
   
   async function toggleFavorite(pokemonName: string) {
+    if (Platform.OS === 'android') {
+      Vibration.vibrate(10);
+    }
     try {
       const stored = await AsyncStorage.getItem('pokemon_favs');
       let favs = stored ? JSON.parse(stored) : [];
@@ -509,6 +516,8 @@ export default function PokemonDetails() {
               <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                 <Ionicons name="arrow-back" size={fontSizes.title} color="black" />
               </TouchableOpacity>
+             <TouchableOpacity onPress={() => router.back()}>
+                </TouchableOpacity>
               <Image
                 source={{ uri: pokemonDets?.sprites.other["official-artwork"].front_default }}
                 style={[styles.mainImage, { width: imageSizes.main, height: imageSizes.main }]}
@@ -523,17 +532,17 @@ export default function PokemonDetails() {
             </View>
             
             {/* Right side - Details */}
-            <ScrollView style={styles.splitRight} showsVerticalScrollIndicator={false}>
+            <ScrollView style={[styles.splitRight, { backgroundColor: isDark ? '#141415' : '#f5f5f5' }]} showsVerticalScrollIndicator={false}>
               <View style={[styles.detailsSection, { padding: spacing.padding }]}>
                 {/* Stats */}
-                <View style={[styles.statsContainer, {}]}>
+                <View style={[styles.statsContainer, { backgroundColor: isDark ? '#1a1a1c' : '#ffffff', shadowColor: isDark ? '#000000' : '#00000020' }]}>
                   {[
                     { label: 'Height', value: pokemonDets?.height },
                     { label: 'Weight', value: pokemonDets?.weight },
                     { label: 'Base Exp', value: pokemonDets?.base_experience }
                   ].map(stat => (
                     <View key={stat.label} style={styles.statItem}>
-                      <Text style={[styles.statLabel, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold' }]}>{stat.label}</Text>
+                      <Text style={[styles.statLabel, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold', color: isDark ? '#9090a0' : '#666' }]}>{stat.label}</Text>
                       <Text style={[styles.statValue, { 
                         color: pokemonColorDark,
                         fontSize: fontSizes.stats,
@@ -546,8 +555,8 @@ export default function PokemonDetails() {
                 </View>
                 
                 {/* Evolution Timeline */}
-                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin }]}>
-                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Evolution Timeline</Text>
+                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin, backgroundColor: isDark ? '#1a1a1c' : '#ffffff90', shadowColor: isDark ? '#000000' : '#00000020' }]}>
+                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>Evolution Timeline</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.evolutionContainer}>
                       {evolutionChain.map((evo, i) => (
@@ -565,7 +574,7 @@ export default function PokemonDetails() {
                               source={{ uri: evo.sprite }}
                               style={[styles.evolutionImage, { width: imageSizes.evolution, height: imageSizes.evolution }]}
                             />
-                            <Text style={[styles.evolutionName, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold' }]}>{evo.name}</Text>
+                            <Text style={[styles.evolutionName, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold', color: isDark ? '#ffffff' : '#000000' }]}>{evo.name}</Text>
                           </TouchableOpacity>
                           {i < evolutionChain.length - 1 && (
                             <Text style={[styles.evolutionArrow, { fontSize: fontSizes.title, fontFamily: 'Inter_700Bold' }]}>→</Text>
@@ -577,8 +586,8 @@ export default function PokemonDetails() {
                 </View>
              
                 {/* Abilities with Details */}
-                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin }]}>
-                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Abilities</Text>
+                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin, backgroundColor: isDark ? '#1a1a1c' : '#ffffff90', shadowColor: isDark ? '#000000' : '#00000020' }]}>
+                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>Abilities</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.abilitiesScrollContainer}>
                     <View style={styles.abilitiesRowContainer}>
                       {pokemonDets?.abilities.map(ability => {
@@ -596,7 +605,7 @@ export default function PokemonDetails() {
                             onPress={() => setSelectedAbility(isSelected ? null : ability.ability.name)}
                           >
                             <Text style={[styles.abilityText, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', color: isSelected ? '#fff' : '#111' }]}>
-                              {ability.ability.name} {ability.is_hidden && "(Hidden)"}
+                              {ability.ability.name} {ability.is_hidden && ""}
                             </Text>
                           </TouchableOpacity>
                         );
@@ -606,10 +615,10 @@ export default function PokemonDetails() {
                   
                   {selectedAbility && (
                     <View style={[styles.abilityDescriptionBlock, { marginTop: spacing.margin, padding: spacing.padding, backgroundColor: pokemonColorDark + '10', borderRadius: spacing.cardRadius }]}>
-                      <Text style={[styles.abilityDescriptionTitle, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', marginBottom: spacing.margin / 2 }]}>
+                      <Text style={[styles.abilityDescriptionTitle, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', marginBottom: spacing.margin / 2, color: isDark ? '#ffffff' : '#333' }]}>
                         {selectedAbility}
                       </Text>
-                      <Text style={[styles.abilityDescription, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', lineHeight: 22 }]}>
+                      <Text style={[styles.abilityDescription, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', lineHeight: 22, color: isDark ? '#b0b0c0' : '#333' }]}>
                         {getEnglishEffect(abilitiesDetails.get(selectedAbility)?.effect_entries || [])}
                       </Text>
                     </View>
@@ -617,8 +626,8 @@ export default function PokemonDetails() {
                 </View>
                 
                 {/* Moves Block */}
-                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin }]}>
-                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Moves</Text>
+                <View style={[styles.card, { borderRadius: spacing.cardRadius, marginTop: spacing.margin, backgroundColor: isDark ? '#1a1a1c' : '#ffffff90', shadowColor: isDark ? '#000000' : '#00000020' }]}>
+                  <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>Moves</Text>
                   <View style={styles.movesGrid}>
                     {pokemonDets.moves.slice(0, 6).map(move => {
                       const moveDetail = movesDetails.get(move.move.name);
@@ -644,7 +653,7 @@ export default function PokemonDetails() {
                   </View>
                   {pokemonDets.moves.length > 6 && (
                     <Text style={[styles.moreMovesText, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', textAlign: 'center', marginTop: spacing.margin }]}>
-                      + {pokemonDets.moves.length - 6} more moves
+                      + {pokemonDets.moves.length - 6} more learnable moves
                     </Text>
                   )}
                 </View>
@@ -667,147 +676,78 @@ export default function PokemonDetails() {
     );
   }
   
-  // Mobile Layout
+  // Mobile Layout android and stuff
   return (
     <>
-      <ScrollView style={{ flex: 1 }}>
-        <View style={[styles.mobileContainer, { backgroundColor: pokemonColor }]}>
-          {/* Header */}
-          <View style={[styles.mobileHeader, { paddingHorizontal: spacing.padding, paddingTop: spacing.padding }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={fontSizes.subtitle} color="black" />
-            </TouchableOpacity>
-            <View style={styles.headerSpacer}>
-              <View style={[styles.loaderBar, { width: width * 0.1 }]} />
-            </View>
-            <TouchableOpacity onPress={() => toggleFavorite(pokemonDets.name)}>
-              <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={fontSizes.subtitle} color={isFavorite ? "#ff3b3b" : "black"} />
-            </TouchableOpacity>
+      <ScrollView style={{ flex: 1, backgroundColor: isDark ? '#141415' : '#fafafc' }}>
+        {/* Header Navigation */}
+        <View style={[styles.mobileHeader, { paddingHorizontal: spacing.padding, paddingTop: spacing.padding }]}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={fontSizes.subtitle} color="black" />
+          </TouchableOpacity>
+          <View style={styles.headerSpacer}>
+            <View style={[styles.loaderBar, { width: width * 0.1 }]} />
           </View>
-          
-          <Text style={[styles.mobileTitle, { fontSize: fontSizes.title, fontFamily: 'Inter_800Black', marginTop: spacing.margin }]}>
-            {pokemonDets?.name}
-          </Text>
-          
-          {/* Image Section */}
-          <View style={[styles.imageSection, { padding: spacing.padding }]}>
-            <View style={styles.imageWrapper}>
-              <Image
-                source={{ uri: pokemonDets?.sprites.other["official-artwork"].front_default }}
-                style={[styles.mainImage, { width: imageSizes.main, height: imageSizes.main }]}
-                resizeMode="contain"
-              />
-            </View>
+          <TouchableOpacity onPress={() => toggleFavorite(pokemonDets.name)}>
+            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={fontSizes.subtitle} color={isFavorite ? "#ff3b3b" : "black"} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Marquee Swatch Card */}
+        <View style={[styles.marqueeSwatchContainer, { 
+          marginHorizontal: spacing.margin, 
+          marginVertical: spacing.margin,
+          backgroundColor: isDark ? '#1a1a1c' : '#fafafc',
+          borderColor: isDark ? '#333333' : '#e5e1ef'
+        }]}>
+          {/* Chip Section */}
+          <View style={[styles.marqueeChip, { backgroundColor: pokemonColorDark }]}>
+            <View style={styles.marqueeStripes} />
+            <Image
+              source={{ uri: pokemonDets?.sprites.other["official-artwork"].front_default }}
+              style={styles.marqueeChipImage}
+              resizeMode="contain"
+            />
           </View>
-          
-          <Text style={[styles.mobilePokemonNumber, { fontSize: fontSizes.stats, fontFamily: 'Inter_700Bold', marginLeft: spacing.padding }]}>
-            #{pokemonDets?.id}
-          </Text>
-          
-          {/* Stats Section */}
-          <View style={[styles.mobileStats, { 
-            flexDirection: width < 400 ? 'column' : 'row',
-            justifyContent: 'space-around',
-            padding: spacing.padding,
-            gap: spacing.margin
-          }]}>
-            {[
-              { label: 'Height', value: pokemonDets?.height },
-              { label: 'Weight', value: pokemonDets?.weight },
-              { label: 'Base Exp', value: pokemonDets?.base_experience }
-            ].map(stat => (
-              <View key={stat.label} style={styles.mobileStatItem}>
-                <Text style={[styles.mobileStatLabel, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold' }]}>{stat.label}</Text>
-                <Text style={[styles.mobileStatValue, { 
-                  color: pokemonColorDark,
-                  fontSize: fontSizes.stats,
-                  fontFamily: 'Inter_800Black'
-                }]}>
-                  {stat.value}
-                </Text>
+
+          {/* Body Section */}
+          <View style={styles.marqueeBody}>
+            {/* Head */}
+            <View style={styles.marqueeHead}>
+              <Text style={[styles.marqueeEyebrow, { color: isDark ? '#9090a0' : '#6b6680' }]}>TYPE · {pokemonDets?.types[0]?.type.name.toUpperCase()}</Text>
+              <View style={[styles.marqueeDot, { backgroundColor: pokemonColorDark }]} />
+            </View>
+
+            {/* Name */}
+            <Text style={[styles.marqueeName, { fontFamily: 'Inter_800Black', color: isDark ? '#ffffff' : '#1a1a2e' }]}>
+              {pokemonDets?.name}
+            </Text>
+
+            {/* Role/Description */}
+            <Text style={[styles.marqueeRole, { color: isDark ? '#b0b0c0' : '#6b6680' }]}>
+              #{pokemonDets?.id} • {pokemonDets?.types.map(t => t.type.name).join(', ')}
+            </Text>
+
+            {/* Tokens Section */}
+            <View style={[styles.marqueeTokens, { borderTopColor: isDark ? '#333333' : '#e5e1ef' }]}>
+              <View style={styles.tokenItem}>
+                <Text style={[styles.tokenLabel, { color: isDark ? '#9090a0' : '#6b6680' }]}>HEIGHT</Text>
+                <Text style={[styles.tokenValue, { color: isDark ? '#ffffff' : '#1a1a2e' }]}>{pokemonDets?.height}</Text>
               </View>
-            ))}
+              <View style={styles.tokenItem}>
+                <Text style={[styles.tokenLabel, { color: isDark ? '#9090a0' : '#6b6680' }]}>WEIGHT</Text>
+                <Text style={[styles.tokenValue, { color: isDark ? '#ffffff' : '#1a1a2e' }]}>{pokemonDets?.weight}</Text>
+              </View>
+              <View style={styles.tokenItem}>
+                <Text style={[styles.tokenLabel, { color: isDark ? '#9090a0' : '#6b6680' }]}>EXP</Text>
+                <Text style={[styles.tokenValue, { color: isDark ? '#ffffff' : '#1a1a2e' }]}>{pokemonDets?.base_experience}</Text>
+              </View>
+            </View>
           </View>
         </View>
-        
-        {/* Bottom Sections */}
-        <View style={styles.bottomSections}>
-          {/* Abilities with Details */}
-          <View style={[styles.card, { borderRadius: spacing.cardRadius, margin: spacing.margin }]}>
-            <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Abilities</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.abilitiesScrollContainer}>
-              <View style={styles.abilitiesRowContainer}>
-                {pokemonDets?.abilities.map(ability => {
-                  const isSelected = selectedAbility === ability.ability.name;
-                  return (
-                    <TouchableOpacity 
-                      key={ability.ability.name}
-                      style={[styles.abilityBadge, { 
-                        backgroundColor: isSelected ? pokemonColorDark : pokemonColorDark + '40',
-                        paddingVertical: spacing.padding * 0.6,
-                        paddingHorizontal: spacing.padding,
-                        borderWidth: isSelected ? 2 : 0,
-                        borderColor: pokemonColorDark,
-                      }]}
-                      onPress={() => setSelectedAbility(isSelected ? null : ability.ability.name)}
-                    >
-                      <Text style={[styles.abilityText, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', color: isSelected ? '#fff' : '#111' }]}>
-                        {ability.ability.name} {ability.is_hidden && "(Hidden)"}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </ScrollView>
-            
-            {selectedAbility && (
-              <View style={[styles.abilityDescriptionBlock, { marginTop: spacing.margin, padding: spacing.padding, backgroundColor: pokemonColorDark + '10', borderRadius: spacing.cardRadius }]}>
-                <Text style={[styles.abilityDescriptionTitle, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', marginBottom: spacing.margin / 2 }]}>
-                  {selectedAbility}
-                </Text>
-                <Text style={[styles.abilityDescription, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', lineHeight: 22 }]}>
-                  {getEnglishEffect(abilitiesDetails.get(selectedAbility)?.effect_entries || [])}
-                </Text>
-              </View>
-            )}
-          </View>
-          
-          {/* Moves Block */}
-          <View style={[styles.card, { borderRadius: spacing.cardRadius, margin: spacing.margin }]}>
-            <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Moves</Text>
-            <View style={styles.movesGrid}>
-              {pokemonDets.moves.slice(0, 20).map(move => {
-                const moveDetail = movesDetails.get(move.move.name);
-                return (
-                  <TouchableOpacity 
-                    key={move.move.name}
-                    style={[styles.moveCard, {
-                      backgroundColor: pokemonColorDark + '20'
-                    }]}
-                    onPress={() => moveDetail && handleMovePress(moveDetail)}
-                  >
-                    <Text style={[styles.moveName, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold' }]}>
-                      {move.move.name}
-                    </Text>
-                    {moveDetail && (
-                      <Text style={[styles.moveType, { fontSize: fontSizes.body - 3, fontFamily: 'Inter_500Medium', color: '#666' }]}>
-                        {moveDetail.type.name} • {moveDetail.damage_class.name}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {pokemonDets.moves.length > 20 && (
-              <Text style={[styles.moreMovesText, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', textAlign: 'center', marginTop: spacing.margin }]}>
-                + {pokemonDets.moves.length - 20} more moves
-              </Text>
-            )}
-          </View>
-          
           {/* Evolution Timeline */}
-          <View style={[styles.card, { borderRadius: spacing.cardRadius, margin: spacing.margin }]}>
-            <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>Evolution Timeline</Text>
+          <View style={[styles.card, { borderRadius: spacing.cardRadius, margin: spacing.margin, backgroundColor: isDark ? '#1a1a1c' : '#ffffff90', shadowColor: isDark ? '#000000' : '#00000020' }]}>
+            <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>Evolution Timeline</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.evolutionContainer}>
                 {evolutionChain.map((evo, i) => (
@@ -825,7 +765,7 @@ export default function PokemonDetails() {
                         source={{ uri: evo.sprite }}
                         style={[styles.evolutionImage, { width: imageSizes.evolution, height: imageSizes.evolution }]}
                       />
-                      <Text style={[styles.evolutionName, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold' }]}>{evo.name}</Text>
+                      <Text style={[styles.evolutionName, { fontSize: fontSizes.body, fontFamily: 'Inter_600SemiBold', color: isDark ? '#ffffff' : '#000000' }]}>{evo.name}</Text>
                     </TouchableOpacity>
                     {i < evolutionChain.length - 1 && (
                       <Text style={[styles.evolutionArrow, { fontSize: fontSizes.title, fontFamily: 'Inter_700Bold' }]}>→</Text>
@@ -835,6 +775,104 @@ export default function PokemonDetails() {
               </View>
             </ScrollView>
           </View>
+        
+        {/* Bottom Sections */}
+        <View style={styles.bottomSections}>
+
+          {/* Abilities with Details */}
+          <View style={[styles.card, { 
+            borderRadius: spacing.cardRadius, 
+            margin: spacing.margin,
+            backgroundColor: isDark ? '#1a1a1c' : '#ffffff90'
+          }]}>
+            <Text style={[styles.sectionTitle, { 
+              fontSize: fontSizes.subtitle, 
+              fontFamily: 'Inter_700Bold',
+              color: isDark ? '#ffffff' : '#000000'
+            }]}>Abilities</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.abilitiesScrollContainer}>
+              <View style={styles.abilitiesRowContainer}>
+                {pokemonDets?.abilities.map(ability => {
+                  const isSelected = selectedAbility === ability.ability.name;
+                  return (
+                    <TouchableOpacity 
+                      key={ability.ability.name}
+                      onPress={() => {
+                        if (Platform.OS === 'android') {
+                          Vibration.vibrate(8);
+                        }
+                        setSelectedAbility(isSelected ? null : ability.ability.name)
+                      }}
+                      style={[styles.abilityBadge, { 
+                        backgroundColor: isSelected ? pokemonColorDark : pokemonColorDark + '40',
+                        paddingVertical: spacing.padding * 0.6,
+                        paddingHorizontal: spacing.padding,
+                        borderWidth: isSelected ? 2 : 0,
+                        borderColor: pokemonColorDark,
+                      }]}
+                    >
+                      <Text style={[styles.abilityText, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', color: isSelected ? '#fff' : '#111' }]}>
+                        {ability.ability.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            
+            {selectedAbility && (
+              <View style={[styles.abilityDescriptionBlock, { marginTop: spacing.margin, padding: spacing.padding, backgroundColor: pokemonColorDark + '10', borderRadius: spacing.cardRadius }]}>
+                <Text style={[styles.abilityDescriptionTitle, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', marginBottom: spacing.margin / 2, color: isDark ? '#ffffff' : '#333' }]}>
+                  {selectedAbility}
+                </Text>
+                <Text style={[styles.abilityDescription, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', lineHeight: 22, color: isDark ? '#b0b0c0' : '#333' }]}>
+                  {getEnglishEffect(abilitiesDetails.get(selectedAbility)?.effect_entries || [])}
+                </Text>
+              </View>
+            )}
+          </View>
+         
+        
+          
+          {/* Moves Block */}
+          <View style={[styles.card, { borderRadius: spacing.cardRadius, margin: spacing.margin, backgroundColor: isDark ? '#1a1a1c' : '#ffffff90', shadowColor: isDark ? '#000000' : '#00000020' }]}>
+            <Text style={[styles.sectionTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>Moves</Text>
+            <View style={styles.movesGrid}>
+              {pokemonDets.moves.slice(0, 20).map(move => {
+                const moveDetail = movesDetails.get(move.move.name);
+                return (
+                  <TouchableOpacity
+                    key={move.move.name}
+                    onPress={() => {
+                      if (Platform.OS === 'android') {
+                        Vibration.vibrate(8);
+                      }
+                      moveDetail && handleMovePress(moveDetail)
+                    }}
+                    style={[styles.moveCard, {
+                      backgroundColor: pokemonColorDark + '20',
+                      borderColor: isDark ? '#444444' : '#ddd'
+                    }]}
+                  >
+                    <Text style={[styles.moveName, { fontSize: fontSizes.body, fontFamily: 'Inter_700Bold', color: isDark ? '#ffffff' : '#000000' }]}>
+                      {move.move.name}
+                    </Text>
+                    {moveDetail && (
+                      <Text style={[styles.moveType, { fontSize: fontSizes.body - 3, fontFamily: 'Inter_500Medium', color: isDark ? '#9090a0' : '#666' }]}>
+                        {moveDetail.type.name} • {moveDetail.damage_class.name}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {pokemonDets.moves.length > 20 && (
+              <Text style={[styles.moreMovesText, { fontSize: fontSizes.body - 2, fontFamily: 'Inter_500Medium', textAlign: 'center', marginTop: spacing.margin }]}>
+                + {pokemonDets.moves.length - 20} more moves
+              </Text>
+            )}
+          </View>
+          
         </View>
       </ScrollView>
       
@@ -933,7 +971,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 16,
-    boxShadow: '20px 20px 60px #f6efef, -20px -20px 60px #f3f3f3',
+    boxShadow: 'none',
   },
   statItem: {
     alignItems: 'center',
@@ -948,7 +986,7 @@ const styles = StyleSheet.create({
   // Card styles
   card: {
     padding: 14,
-    backgroundColor: "#ffffff90",
+    backgroundColor: '#ffffff90',
     marginBottom: 12,
   },
   sectionTitle: {
@@ -1005,11 +1043,12 @@ const styles = StyleSheet.create({
     minWidth: 120,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#333333',
   },
   moveName: {
     textTransform: 'capitalize',
     marginBottom: 4,
+    color: '#000000',
   },
   moveType: {
     textTransform: 'capitalize',
@@ -1129,7 +1168,106 @@ const styles = StyleSheet.create({
   mobileStatValue: {
     fontWeight: 'bold',
   },
+  
+  // Marquee Swatch Card styles
+  marqueeSwatchContainer: {
+    backgroundColor: '#fafafc',
+    borderWidth: 1,
+    borderColor: '#e5e1ef',
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: 'rgba(71, 39, 181, 0.22)',
+    shadowOffset: { width: 0, height: 24 },
+    shadowOpacity: 1,
+    shadowRadius: 48,
+    elevation: 10,
+  },
+  marqueeChip: {
+    height: 160,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  marqueeStripes: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+  },
+  marqueeChipImage: {
+    width: 120,
+    height: 120,
+    zIndex: 1,
+  },
+  marqueeBody: {
+    padding: 20,
+  },
+  marqueeHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  marqueeEyebrow: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    letterSpacing: 0.12,
+    textTransform: 'uppercase',
+    color: '#6b6680',
+  },
+
+  marqueeDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    shadowColor: 'rgba(71, 39, 181, 0.12)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  marqueeName: {
+    fontSize: 32,
+    fontWeight: '800',
+    marginBottom: 8,
+    color: '#1a1a2e',
+  },
+  marqueeRole: {
+    fontSize: 13,
+    lineHeight: 1.5,
+    color: '#6b6680',
+    marginBottom: 14,
+  },
+  marqueeTokens: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e1ef',
+  },
+  tokenItem: {
+    flexDirection: 'column',
+    gap: 2,
+  },
+  tokenLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9,
+    letterSpacing: 0.12,
+    textTransform: 'uppercase',
+    color: '#6b6680',
+  },
+  tokenValue: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#1a1a2e',
+  },
   bottomSections: {
     paddingBottom: 20,
   },
+
 });
