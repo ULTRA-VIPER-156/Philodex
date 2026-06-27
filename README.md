@@ -52,5 +52,9 @@ althought not complete has a weird setting page
 
 
 -----------------Try out my unstable verstion --------------
-https://philodex--yhtosp7t5x.expo.app
 
+<h2>
+  https://philodex-v2--3ykj14wma4.expo.app/
+
+</h2>
+<h1>Unstable version Feauture </h1>
