@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "philoDex",
-    "slug": "philoDex",
+    "slug": "philoDex-v2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -55,7 +55,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3eb327cb-92a5-49b6-9907-a0910f703b25"
+        "projectId": "b2451d96-344e-4d05-961f-252e90d47228"
       }
     },
     "runtimeVersion": {
@@ -63,6 +63,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/3eb327cb-92a5-49b6-9907-a0910f703b25"
-    }
+    },
+    "owner": "ultravipe"
   }
 }

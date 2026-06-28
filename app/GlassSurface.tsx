@@ -6,9 +6,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
+  Vibration,
   View,
-  ViewStyle,
-  Vibration
+  ViewStyle
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { getThemeColors } from './Artifacts/Colors';
@@ -47,7 +47,7 @@ const GlassTabNavigation: React.FC<GlassSurfaceProps> = ({
     { id: 0, path: '/', component: (active: boolean) => <HomeIcon color={iconColor(active)} /> },
     { id: 1, path: '/favourites', component: (active: boolean) => <HeartIcon color={iconColor(active)} /> },
     { id: 2, path: '/Settings', component: (active: boolean) => <SettingsIcon color={iconColor(active)} /> },
-    { id: 3, path: '/search', component: (active: boolean) => <UserIcon color={iconColor(active)} /> },
+    { id: 3, path: '/profile', component: (active: boolean) => <UserIcon color={iconColor(active)} /> },
   ];
 
   const handlePress = (path: string) => {

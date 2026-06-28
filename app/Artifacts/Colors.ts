@@ -67,7 +67,7 @@ export const Colors = {
   },
   pokemonType: {
     base: {
-      normal: { light: '#D3D3C8', dark: '#3a3a3a' },
+      normal: { light: '#e3e396', dark: '#3a3a3a' },
       fire: { light: '#FFB6A5', dark: '#8b3a00' },
       water: { light: '#A6D8FF', dark: '#003d5c' },
       grass: { light: '#B5E7B5', dark: '#2a5a2a' },

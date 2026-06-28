@@ -132,7 +132,7 @@ interface PokeSprites {
   };
 }
 
-// Helper func
+// Helper func for screen sizes 
 const getResponsiveSize = (width: number, sizes: { phone: number; tablet: number; desktop: number }) => {
   if (width >= 1024) return sizes.desktop;
   if (width >= 768) return sizes.tablet;
@@ -150,7 +150,7 @@ const MoveDetailsModal = ({ visible, move, onClose, styles, fontSizes, spacing, 
     <View style={styles.modalOverlay}>
       <View style={[styles.modalContent, { borderRadius: spacing.cardRadius }]}>
         <View style={styles.modalHeader}>
-          <Text style={[styles.modalTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_700Bold' }]}>
+          <Text style={[styles.modalTitle, { fontSize: fontSizes.subtitle, fontFamily: 'Inter_900Bold' }]}>
             {move?.name}
           </Text>
           <TouchableOpacity onPress={() => {
@@ -688,12 +688,10 @@ export default function PokemonDetails() {
           <View style={styles.headerSpacer}>
             <View style={[styles.loaderBar, { width: width * 0.1 }]} />
           </View>
-          <TouchableOpacity onPress={() => toggleFavorite(pokemonDets.name)}>
-            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={fontSizes.subtitle} color={isFavorite ? "#ff3b3b" : "black"} />
-          </TouchableOpacity>
+          
         </View>
 
-        {/* Marquee Swatch Card */}
+        {/* Marquee Swatch Card from Uiverse.io */}
         <View style={[styles.marqueeSwatchContainer, { 
           marginHorizontal: spacing.margin, 
           marginVertical: spacing.margin,
@@ -706,7 +704,6 @@ export default function PokemonDetails() {
             <Image
               source={{ uri: pokemonDets?.sprites.other["official-artwork"].front_default }}
               style={styles.marqueeChipImage}
-              resizeMode="contain"
             />
           </View>
 
@@ -719,14 +716,18 @@ export default function PokemonDetails() {
             </View>
 
             {/* Name */}
+            <View>
+
             <Text style={[styles.marqueeName, { fontFamily: 'Inter_800Black', color: isDark ? '#ffffff' : '#1a1a2e' }]}>
               {pokemonDets?.name}
             </Text>
+            <TouchableOpacity onPress={() => toggleFavorite(pokemonDets.name)}>
+            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={fontSizes.subtitle} color={isFavorite ? "#ff3b3b" : "black"} />
+          </TouchableOpacity>
+           </View>
 
-            {/* Role/Description */}
-            <Text style={[styles.marqueeRole, { color: isDark ? '#b0b0c0' : '#6b6680' }]}>
-              #{pokemonDets?.id} • {pokemonDets?.types.map(t => t.type.name).join(', ')}
-            </Text>
+
+        
 
             {/* Tokens Section */}
             <View style={[styles.marqueeTokens, { borderTopColor: isDark ? '#333333' : '#e5e1ef' }]}>

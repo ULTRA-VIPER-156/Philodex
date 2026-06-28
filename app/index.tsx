@@ -199,6 +199,33 @@ useEffect(() => {
     }
   }
 
+  //Wanna build a text flipper thingy 
+const TextFlipper = ({
+  textSequence,
+  interval = 500, // Default interval of 0.5 seconds
+}:
+ {
+  textSequence: string[];
+  interval?: number;
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (textSequence.length === 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % textSequence.length);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [textSequence, interval]);
+
+  return (
+    <Text style={{ color: themeColors.textPrimary }}>
+      {textSequence[currentIndex]}
+    </Text>
+  );
+};
 
 
   const notFound = !LoaderData && pokemonData.length === 0
@@ -215,7 +242,26 @@ useEffect(() => {
             loop
             style={{ width: 280, height: 280,marginTop:0 }}
           />
+                  <TextFlipper
+          textSequence={[
+            "Looking for Pokeballs....",
+            "beating up team rocket...",
+            "Collectring a few badges....",
+            "Catching some pokemon....",
+            "still busy ....",
+            "Some stuff is happening...",
+            "Almost there..",
+            "Just a few more seconds.....",
+            "Loading the pokemon data....",
+            "Getting the pokemon details....",
+            "Fetching the sprites....",
+            "Almost done...",
+            "Just a few more seconds.....",
+          ]}
+          interval={500}
+        />
         </View>
+       
       )
     }
     else if(notFound)
@@ -228,6 +274,7 @@ useEffect(() => {
               loop
               style={{ width: 280, height: 280,marginTop:'0%' }}
             />
+           
           </View>
         )
       }
@@ -426,6 +473,7 @@ return (
       fontSize:20,
       fontWeight:'bold',
       marginLeft:24,
+      paddingTop:20,
       color: themeColors.textPrimary,
 
     }}

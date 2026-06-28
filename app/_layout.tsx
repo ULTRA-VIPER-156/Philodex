@@ -36,6 +36,8 @@ export default function RootLayout() {
                 sheetAllowedDetents: [0.8,1],
                 sheetGrabberVisible: true,
                 navigationBarHidden: true,
+               headerShown: false,
+
                 sheetCornerRadius: 15,
                 animation: "slide_from_bottom",
               }}
