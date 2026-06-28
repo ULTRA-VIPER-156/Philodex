@@ -58,3 +58,12 @@ althought not complete has a weird setting page
 
 </h2>
 <h1>Unstable version Feauture </h1>
+●more uniform dark mode 
+●moved the nav bar outside pages to keep it fixed at bottom 
+●improved designs for mobile view 
+●replaced lottie loader with a proper loading one 
+●vibrations feedback for on device app (not web)
+●active tabs on nav bar 
+●made the nav bar transparent (glass effect type shi) 
+●improved systems colors and fonts
+
