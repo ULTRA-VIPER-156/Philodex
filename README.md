@@ -1,3 +1,4 @@
+<img width="1080" height="2340" alt="Screenshot_20260627_222357_Chrome" src="https://github.com/user-attachments/assets/506d4231-cd6d-423b-9f00-d2b6a22bd839" />
 <img width="1907" height="922" alt="image" src="https://github.com/user-attachments/assets/ed21386b-9d91-4d6f-85b2-8f8431caf2ec" /><h1>
   Philodedex
 </h1>
@@ -66,4 +67,8 @@ althought not complete has a weird setting page
 ●active tabs on nav bar 
 ●made the nav bar transparent (glass effect type shi) 
 ●improved systems colors and fonts
+<img width="1080" height="2340" alt="Screenshot_20260627_222357_Chrome" src="https://github.com/user-attachments/assets/a2934ae8-dddd-405d-a571-e4ede94ca822" /><img width="1080" height="2340" alt="Screenshot_20260628_140950_Chrome" src="https://github.com/user-attachments/assets/67e25fe6-a13a-41c9-97b2-b5c3d014391b" />
+<img width="1080" height="2340" alt="Screenshot_20260627_222322_Chrome" src="https://github.com/user-attachments/assets/5c648bb4-0f9a-4088-801d-5aee206dce0e" />
+<img width="1080" height="2340" alt="Screenshot_20260627_222345_Chrome" src="https://github.com/user-attachments/assets/ac4f8aab-2fc3-4043-a688-2415f969cae2" />
+
 
