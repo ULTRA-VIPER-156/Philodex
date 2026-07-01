@@ -58,6 +58,13 @@ and so much more lol
 </h2>
 
 
-Uploading WhatsApp Video 2026-07-02 at 1.33.25 AM (1).mp4…
+
+
+https://github.com/user-attachments/assets/c822463c-63b2-4485-bb98-17f072c4c516
+
+
+
+
+
 
 
